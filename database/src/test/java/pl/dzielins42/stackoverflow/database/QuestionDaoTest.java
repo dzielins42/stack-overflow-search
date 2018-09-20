@@ -15,7 +15,9 @@ import java.util.List;
 import pl.dzielins42.stackoverflow.database.model.Question;
 
 import static org.hamcrest.CoreMatchers.hasItems;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 public class QuestionDaoTest {
@@ -48,18 +50,52 @@ public class QuestionDaoTest {
                 .authorDisplayName("Mickey")
                 .authorProfileImageUrl("I'm out of jokes here")
                 .build();
-        Question q2 = Question.builder()
-                .id(1)
-                .title("How much wood would a woodchuck chuck?")
-                .answerCount(2187)
-                .authorDisplayName("RHDavis")
-                .authorProfileImageUrl(null)
-                .build();
+        Question q2 = createSimpleQuestion(2);
 
         mQuestionDao.insert(q1, q2);
 
         List<Question> questions = mQuestionDao.all().blockingFirst();
 
         assertThat(questions, hasItems(q1, q2));
+    }
+
+    @Test
+    public void clear() {
+        insertAndGetAll();
+
+        mQuestionDao.clear();
+
+        List<Question> questions = mQuestionDao.all().blockingFirst();
+
+        assertTrue(questions.isEmpty());
+    }
+
+    @Test
+    public void replaceAll() {
+        List<Question> questions;
+        Question q1 = createSimpleQuestion(1);
+        Question q2 = createSimpleQuestion(2);
+        Question q3 = createSimpleQuestion(3);
+        Question q4 = createSimpleQuestion(4);
+
+        mQuestionDao.insert(q1, q2);
+
+        questions = mQuestionDao.all().blockingFirst();
+        assertThat(questions, hasItems(q1, q2));
+
+        mQuestionDao.replaceAll(q3, q4);
+
+        questions = mQuestionDao.all().blockingFirst();
+        assertThat(questions, hasItems(q3, q4));
+        assertThat(questions, not(hasItems(q1, q2)));
+    }
+
+    private Question createSimpleQuestion(int i) {
+        return Question.builder()
+                .id(i)
+                .title(String.valueOf(i))
+                .answerCount(i)
+                .authorDisplayName(String.valueOf(i))
+                .build();
     }
 }

@@ -3,12 +3,12 @@ package pl.dzielins42.stackoverflow.database.model;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Value;
 import lombok.experimental.Accessors;
 
 @Data
@@ -23,10 +23,12 @@ public class Question {
     @ColumnInfo(name = "question_id")
     private int mId;
     @ColumnInfo(name = "title")
+    @NonNull
     private String mTitle;
     @ColumnInfo(name = "answer_count")
     private int mAnswerCount;
     @ColumnInfo(name = "author_display_name")
+    @NonNull
     private String mAuthorDisplayName;
     @ColumnInfo(name = "author_profile_image_ulr")
     private String mAuthorProfileImageUrl;
