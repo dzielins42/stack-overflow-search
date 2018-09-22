@@ -4,11 +4,22 @@ import android.util.Log;
 
 import com.hannesdorfmann.mosby3.mvi.MviBasePresenter;
 
+import org.reactivestreams.Subscription;
+
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import io.reactivex.Flowable;
+import io.reactivex.FlowableSubscriber;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
+import pl.dzielins42.stackoverflow.database.QuestionDao;
+import pl.dzielins42.stackoverflow.database.model.Question;
+import pl.dzielins42.stackoverflow.interactor.DatabaseInteractor;
+import pl.dzielins42.stackoverflow.interactor.QueryInteractor;
 import pl.dzielins42.stackoverflow.interactor.QuestionClickedInteractor;
 
 /**
@@ -22,17 +33,33 @@ public class MainPresenter extends MviBasePresenter<MainView, MainModel> {
     private static final String TAG = MainPresenter.class.getSimpleName();
 
     private final QuestionClickedInteractor mQuestionClickedInteractor;
+    private final QueryInteractor mQueryInteractor;
+    private final DatabaseInteractor mDatabaseInteractor;
+
+    private final QuestionDao mQuestionDao;
 
     @Inject
-    public MainPresenter(QuestionClickedInteractor questionClickedInteractor) {
+    public MainPresenter(
+            QuestionClickedInteractor questionClickedInteractor,
+            QueryInteractor queryInteractor,
+            DatabaseInteractor databaseInteractor, QuestionDao questionDao) {
         super();
         mQuestionClickedInteractor = questionClickedInteractor;
+        mQueryInteractor = queryInteractor;
+        mDatabaseInteractor = databaseInteractor;
+        mQuestionDao = questionDao;
     }
 
     @Override
     protected void bindIntents() {
+        // TODO internet
+        Flowable<MainIntent> databaseUpdate = mDatabaseInteractor.questions()
+                .map(questions -> new MainIntent.ResultsUpdate(questions));
+        Flowable<MainIntent> nonViewIntents = databaseUpdate;
+
         subscribeViewState(
-                intent(view -> view.intents()
+                intent(view -> Flowable.merge(view.intents(), nonViewIntents)
+                        .subscribeOn(Schedulers.io())
                         .doOnNext(event -> Log.d(TAG, String.valueOf(event)))
                         .publish(event -> process(event))
                         .doOnError(throwable -> Log.e(TAG, "Error: ", throwable))
@@ -52,9 +79,25 @@ public class MainPresenter extends MviBasePresenter<MainView, MainModel> {
 
     private Flowable<MainPatch> process(Flowable<MainIntent> shared) {
         Flowable<MainPatch> questionClicked = shared.ofType(MainIntent.QuestionClicked.class)
-                .switchMap(intent -> mQuestionClickedInteractor.handleQuestionClicked(intent.getQuestion()).toFlowable())
+                .switchMap(intent ->
+                        mQuestionClickedInteractor.handleQuestionClicked(
+                                intent.getQuestion()
+                        ).toFlowable()
+                )
                 .map(intent -> new MainPatch.NoChange());
 
-        return questionClicked;
+        Flowable<MainPatch> query = shared.ofType(MainIntent.Query.class)
+                .switchMap(intent ->
+                        mQueryInteractor.query(intent.getQuery(), 1)
+                                .toFlowable()
+                                .doOnError(throwable -> Log.e(TAG, "Error: ", throwable))
+                                .onErrorReturn(throwable -> new MainPatch.NoChange())
+                                .map(ignore -> new MainPatch.NoChange())
+                );
+
+        Flowable<MainPatch> resultsUpdate = shared.ofType(MainIntent.ResultsUpdate.class)
+                .map(intent -> new MainPatch.DisplayResults(intent.getQuestions()));
+
+        return Flowable.merge(questionClicked, query, resultsUpdate);
     }
 }

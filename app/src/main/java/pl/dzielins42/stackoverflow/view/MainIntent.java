@@ -1,5 +1,10 @@
 package pl.dzielins42.stackoverflow.view;
 
+import android.support.annotation.NonNull;
+
+import java.util.Collections;
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Accessors;
@@ -18,6 +23,7 @@ public interface MainIntent {
     @Accessors(prefix = "m")
     @Builder
     final class QuestionClicked implements MainIntent {
+        @NonNull
         private final Question mQuestion;
     }
 
@@ -28,6 +34,19 @@ public interface MainIntent {
     @Accessors(prefix = "m")
     @Builder
     final class Query implements MainIntent {
+        @NonNull
         private final String mQuery;
+    }
+
+    /**
+     * Intent fired when result list has been updated.
+     */
+    @Value
+    @Accessors(prefix = "m")
+    @Builder
+    final class ResultsUpdate implements MainIntent {
+        @NonNull
+        @Builder.Default
+        private final List<Question> mQuestions = Collections.emptyList();
     }
 }

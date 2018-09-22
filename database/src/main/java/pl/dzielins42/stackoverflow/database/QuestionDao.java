@@ -23,6 +23,15 @@ public abstract class QuestionDao {
     public abstract void insert(Question... questions);
 
     /**
+     * Inserts provided {@link Question} instances into questions table in Room database. In case
+     * of conflict, {@link OnConflictStrategy#REPLACE} strategy is used.
+     *
+     * @param questions entities to be inserted into database.
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    public abstract void insert(List<Question> questions);
+
+    /**
      * @return {@link Flowable} emitting list of all entities in question database. In case
      * underlying data changes, new list will be emitted.
      */
@@ -42,6 +51,17 @@ public abstract class QuestionDao {
      */
     @Transaction
     public void replaceAll(Question... questions) {
+        clear();
+        insert(questions);
+    }
+
+    /**
+     * Removes all data and inserts new data into questions table, in single transaction.
+     *
+     * @param questions entities to be inserted into database.
+     */
+    @Transaction
+    public void replaceAll(List<Question> questions) {
         clear();
         insert(questions);
     }

@@ -3,12 +3,18 @@ package pl.dzielins42.stackoverflow.di;
 import android.app.Application;
 import android.arch.persistence.room.Room;
 import android.content.Context;
+import android.util.Log;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import io.reactivex.Completable;
+import io.reactivex.CompletableEmitter;
+import io.reactivex.CompletableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import pl.dzielins42.stackoverflow.api.StackOverflowService;
 import pl.dzielins42.stackoverflow.database.QuestionDao;
 import pl.dzielins42.stackoverflow.database.SODatabase;
@@ -55,7 +61,13 @@ public class AppModule {
     QuestionDao provideQuestionDao(SODatabase db) {
         QuestionDao questionDao = db.questionDao();
         // Clear here so the old results are not displayed  at the start
-        questionDao.clear();
+        Completable clearCompletable = Completable.create(emitter -> {
+            questionDao.clear();
+            emitter.onComplete();
+        });
+        clearCompletable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe();
         return questionDao;
     }
 }
