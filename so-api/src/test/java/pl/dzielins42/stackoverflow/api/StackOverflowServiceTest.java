@@ -53,17 +53,12 @@ public class StackOverflowServiceTest {
         mMockServer.enqueue(new MockResponse().setBody(response));
 
         // Query parameters are not important as mocked response will be returned
-        SearchResult result = mService.search(
-                null, null,
-                null, null,
-                null,
-                null, null,
-                null,
-                null, null,
-                null
-        ).blockingGet();
+        SearchResult result = mService.search(null, null).blockingGet();
 
-        assertEquals("/2.2/search?site=stackoverflow", mMockServer.takeRequest().getPath());
+        assertEquals(
+                "/2.2/search?site=stackoverflow&pagesize=50",
+                mMockServer.takeRequest().getPath()
+        );
     }
 
     @Test
@@ -75,15 +70,7 @@ public class StackOverflowServiceTest {
         mMockServer.enqueue(new MockResponse().setBody(response));
 
         // Query parameters are not important as mocked response will be returned
-        SearchResult result = mService.search(
-                null, null,
-                null, null,
-                null,
-                null, null,
-                null,
-                null, null,
-                null
-        ).blockingGet();
+        SearchResult result = mService.search(null, null).blockingGet();
 
         assertEquals(6, result.getQuestions().size());
     }
@@ -93,15 +80,7 @@ public class StackOverflowServiceTest {
         mMockServer.enqueue(new MockResponse().setResponseCode(404));
 
         // Query parameters are not important as mocked response will be returned
-        SearchResult result = mService.search(
-                null, null,
-                null, null,
-                null,
-                null, null,
-                null,
-                null, null,
-                null
-        ).blockingGet();
+        mService.search(null, null).blockingGet();
 
         // Exception should be thrown
     }
