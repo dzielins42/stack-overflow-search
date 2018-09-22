@@ -7,7 +7,8 @@ import com.hannesdorfmann.mosby3.mvi.MviBasePresenter;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
+import pl.dzielins42.stackoverflow.interactor.QuestionClickedInteractor;
 
 /**
  * Connects presentation layer and business logic layer by routing {@link MainIntent} instances
@@ -19,21 +20,26 @@ public class MainPresenter extends MviBasePresenter<MainView, MainModel> {
 
     private static final String TAG = MainPresenter.class.getSimpleName();
 
+    private final QuestionClickedInteractor mQuestionClickedInteractor;
+
     @Inject
-    public MainPresenter() {
+    public MainPresenter(QuestionClickedInteractor questionClickedInteractor) {
         super();
+        mQuestionClickedInteractor = questionClickedInteractor;
     }
 
     @Override
     protected void bindIntents() {
         subscribeViewState(
-                intent(view -> view.intents().toObservable())
+                intent(view -> view.intents()
                         .doOnNext(event -> Log.d(TAG, String.valueOf(event)))
                         .publish(event -> process(event))
                         .doOnError(throwable -> Log.e(TAG, "Error: ", throwable))
                         .scan(initialModel(), (model, patch) -> patch.apply(model))
                         // Skip initial model
-                        .skip(1),
+                        .skip(1)
+                        .toObservable()
+                ),
                 MainView::render
         );
     }
@@ -42,13 +48,18 @@ public class MainPresenter extends MviBasePresenter<MainView, MainModel> {
         return MainModel.builder().counter(0).build();
     }
 
-    private Observable<MainPatch> process(Observable<MainIntent> shared) {
-        return shared
-                .ofType(MainIntent.DummyIntent.class)
+    private Flowable<MainPatch> process(Flowable<MainIntent> shared) {
+        Flowable<MainPatch> questionClicked = shared.ofType(MainIntent.QuestionClicked.class)
+                .switchMap(intent -> mQuestionClickedInteractor.handleQuestionClicked(intent.getQuestion()).toFlowable())
+                .map(intent -> new MainPatch.NoChange());
+
+        Flowable<MainPatch> dummy = shared.ofType(MainIntent.DummyIntent.class)
                 .map(
                         intent -> MainPatch.DummyPatch.builder()
                                 .counter(intent.getCounter())
                                 .build()
                 );
+
+        return Flowable.merge(questionClicked, dummy);
     }
 }

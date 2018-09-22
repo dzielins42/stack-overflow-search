@@ -26,4 +26,18 @@ public interface MainPatch {
             return model.toBuilder().counter(mCounter).build();
         }
     }
+
+    /**
+     * Applies no change to provided model.
+     */
+    @Value
+    @Accessors(prefix = "m")
+    @Builder
+    final class NoChange implements MainPatch {
+
+        @Override
+        public MainModel apply(MainModel model) {
+            return model;
+        }
+    }
 }

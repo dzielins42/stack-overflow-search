@@ -3,6 +3,7 @@ package pl.dzielins42.stackoverflow.view;
 import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Accessors;
+import pl.dzielins42.stackoverflow.database.model.Question;
 
 /**
  * Interface for classes representing event/action that may change business logic state, and thus
@@ -18,5 +19,15 @@ public interface MainIntent {
     @Builder
     final class DummyIntent implements MainIntent {
         private final long mCounter;
+    }
+
+    /**
+     * Intent fired when question was clicked on the list.
+     */
+    @Value
+    @Accessors(prefix = "m")
+    @Builder
+    final class QuestionClicked implements MainIntent {
+        private final Question mQuestion;
     }
 }

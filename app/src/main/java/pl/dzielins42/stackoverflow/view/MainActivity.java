@@ -52,6 +52,7 @@ public class MainActivity
                             .title(String.valueOf(i))
                             .authorDisplayName(String.valueOf(i))
                             .answerCount(i)
+                            .link("https://stackoverflow.com/questions/52458870")
                             .build()
             );
         }
@@ -66,8 +67,12 @@ public class MainActivity
 
     @Override
     public Flowable<MainIntent> intents() {
-        return Flowable.interval(1, TimeUnit.SECONDS)
+        Flowable<MainIntent> interval = Flowable.interval(1, TimeUnit.SECONDS)
                 .map(l -> MainIntent.DummyIntent.builder().counter(l).build());
+
+        Flowable<MainIntent> listClicks = mAdapter.intents();
+
+        return Flowable.merge(interval, listClicks);
     }
 
     @Override

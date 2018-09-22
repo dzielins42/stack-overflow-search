@@ -18,17 +18,25 @@ import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Flowable;
+import io.reactivex.processors.FlowableProcessor;
+import io.reactivex.processors.PublishProcessor;
 import pl.dzielins42.stackoverflow.R;
 import pl.dzielins42.stackoverflow.database.model.Question;
 
 public class QuestionAdapter extends ListAdapter<Question, QuestionAdapter.QuestionViewHolder> {
 
     private final Context mContext;
+    private final FlowableProcessor<MainIntent> mIntents = PublishProcessor.create();
 
     QuestionAdapter(@NonNull Context context) {
         super(new QuestionDiffUtilItemCallback());
 
         mContext = context;
+    }
+
+    Flowable<MainIntent> intents() {
+        return mIntents;
     }
 
     @NonNull
@@ -56,13 +64,21 @@ public class QuestionAdapter extends ListAdapter<Question, QuestionAdapter.Quest
         @BindView(R.id.answer_count)
         AppCompatTextView mAnswerCount;
 
+        private Question mQuestion;
+
         QuestionViewHolder(@NonNull View itemView) {
             super(itemView);
 
             ButterKnife.bind(this, itemView);
+
+            itemView.setOnClickListener(v -> {
+                mIntents.onNext(MainIntent.QuestionClicked.builder().question(mQuestion).build());
+            });
         }
 
         void bind(Question question) {
+            mQuestion = question;
+
             if (!TextUtils.isEmpty(question.getAuthorProfileImageUrl())) {
                 Picasso.get()
                         .load(question.getAuthorProfileImageUrl())
