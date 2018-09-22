@@ -55,11 +55,6 @@ public class MainPresenter extends MviBasePresenter<MainView, MainModel> {
                 .switchMap(intent -> mQuestionClickedInteractor.handleQuestionClicked(intent.getQuestion()).toFlowable())
                 .map(intent -> new MainPatch.NoChange());
 
-        Flowable<MainPatch> dummy = shared.ofType(MainIntent.DummyIntent.class)
-                .map(
-                        intent -> new MainPatch.NoChange()
-                );
-
-        return Flowable.merge(questionClicked, dummy);
+        return questionClicked;
     }
 }

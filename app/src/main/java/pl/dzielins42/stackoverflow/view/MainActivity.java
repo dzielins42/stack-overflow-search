@@ -4,7 +4,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 
 import com.hannesdorfmann.mosby3.mvi.MviActivity;
@@ -17,6 +20,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.AndroidInjection;
 import io.reactivex.Flowable;
+import io.reactivex.processors.FlowableProcessor;
+import io.reactivex.processors.PublishProcessor;
 import pl.dzielins42.stackoverflow.R;
 
 public class MainActivity
@@ -28,12 +33,16 @@ public class MainActivity
     @Inject
     MainPresenter mMainPresenter;
 
+    @BindView(R.id.toolbar)
+    Toolbar mToolbar;
     @BindView(R.id.recycler)
     RecyclerView mRecyclerView;
     @BindView(R.id.empty)
     AppCompatTextView mEmpty;
 
     private QuestionAdapter mAdapter;
+
+    private final FlowableProcessor<CharSequence> mQueryObservable = PublishProcessor.create();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +52,31 @@ public class MainActivity
 
         ButterKnife.bind(this);
 
+        setSupportActionBar(mToolbar);
         mAdapter = new QuestionAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        final SearchView searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String text) {
+                mQueryObservable.onNext(text);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String text) {
+                mQueryObservable.onNext(text);
+                return false;
+            }
+        });
+
+        return true;
     }
 
     @NonNull
@@ -55,12 +87,13 @@ public class MainActivity
 
     @Override
     public Flowable<MainIntent> intents() {
-        Flowable<MainIntent> interval = Flowable.interval(1, TimeUnit.SECONDS)
-                .map(l -> MainIntent.DummyIntent.builder().counter(l).build());
-
         Flowable<MainIntent> listClicks = mAdapter.intents();
+        Flowable<MainIntent> search = mQueryObservable
+                .debounce(250, TimeUnit.MILLISECONDS)
+                .distinctUntilChanged()
+                .map(text -> (MainIntent) new MainIntent.Query(text.toString()));
 
-        return Flowable.merge(interval, listClicks);
+        return Flowable.merge(listClicks, search);
     }
 
     @Override
