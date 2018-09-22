@@ -1,1 +1,1 @@
-include ':app', ':so-api'
+include ':app', ':database', ':so-api'
