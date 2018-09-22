@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "627ca6aaaaa3ed2d79d58a48537c17ea",
+    "identityHash": "40cd066eda5f77bb8738866d3f9e4708",
     "entities": [
       {
         "tableName": "questions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`question_id` INTEGER NOT NULL, `title` TEXT NOT NULL, `answer_count` INTEGER NOT NULL, `author_display_name` TEXT NOT NULL, `author_profile_image_ulr` TEXT, PRIMARY KEY(`question_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`question_id` INTEGER NOT NULL, `title` TEXT NOT NULL, `answer_count` INTEGER NOT NULL, `author_display_name` TEXT NOT NULL, `author_profile_image_ulr` TEXT, `link` TEXT NOT NULL, PRIMARY KEY(`question_id`))",
         "fields": [
           {
             "fieldPath": "mId",
@@ -37,6 +37,12 @@
             "columnName": "author_profile_image_ulr",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "link",
+            "columnName": "link",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -51,7 +57,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"627ca6aaaaa3ed2d79d58a48537c17ea\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"40cd066eda5f77bb8738866d3f9e4708\")"
     ]
   }
 }

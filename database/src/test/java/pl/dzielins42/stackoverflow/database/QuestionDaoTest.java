@@ -48,7 +48,7 @@ public class QuestionDaoTest {
                 .title("The Ultimate Question of Life, the Universe and Everything")
                 .answerCount(1)
                 .authorDisplayName("Mickey")
-                .authorProfileImageUrl("I'm out of jokes here")
+                .link("")
                 .build();
         Question q2 = createSimpleQuestion(2);
 
@@ -96,6 +96,7 @@ public class QuestionDaoTest {
                 .title(String.valueOf(i))
                 .answerCount(i)
                 .authorDisplayName(String.valueOf(i))
+                .link(String.valueOf(i))
                 .build();
     }
 }
