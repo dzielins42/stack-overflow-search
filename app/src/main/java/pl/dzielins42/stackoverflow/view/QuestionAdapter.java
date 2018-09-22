@@ -9,9 +9,12 @@ import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -22,7 +25,7 @@ public class QuestionAdapter extends ListAdapter<Question, QuestionAdapter.Quest
 
     private final Context mContext;
 
-    protected QuestionAdapter(@NonNull Context context) {
+    QuestionAdapter(@NonNull Context context) {
         super(new QuestionDiffUtilItemCallback());
 
         mContext = context;
@@ -53,14 +56,22 @@ public class QuestionAdapter extends ListAdapter<Question, QuestionAdapter.Quest
         @BindView(R.id.answer_count)
         AppCompatTextView mAnswerCount;
 
-        public QuestionViewHolder(@NonNull View itemView) {
+        QuestionViewHolder(@NonNull View itemView) {
             super(itemView);
 
             ButterKnife.bind(this, itemView);
         }
 
-        public void bind(Question question) {
-            // TODO bind profile image
+        void bind(Question question) {
+            if (!TextUtils.isEmpty(question.getAuthorProfileImageUrl())) {
+                Picasso.get()
+                        .load(question.getAuthorProfileImageUrl())
+                        .placeholder(R.drawable.ic_person_placeholder)
+                        .error(R.drawable.ic_person_error)
+                        .into(mProfileImage);
+            } else {
+                mProfileImage.setImageResource(R.drawable.ic_person_placeholder);
+            }
             mAuthorHeader.setText(getFormattedAuthorHeader(question.getAuthorDisplayName()));
             mTitle.setText(question.getTitle());
             mAnswerCount.setText(String.valueOf(question.getAnswerCount()));
