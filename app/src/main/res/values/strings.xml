@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Stack Overflow Search</string>
+    <string name="author_header">&lt;b>%1$s&lt;/b> asks</string>
 </resources>
