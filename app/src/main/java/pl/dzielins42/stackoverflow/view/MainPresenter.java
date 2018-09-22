@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import pl.dzielins42.stackoverflow.interactor.QuestionClickedInteractor;
 
 /**
@@ -39,13 +40,14 @@ public class MainPresenter extends MviBasePresenter<MainView, MainModel> {
                         // Skip initial model
                         .skip(1)
                         .toObservable()
+                        .observeOn(AndroidSchedulers.mainThread())
                 ),
                 MainView::render
         );
     }
 
     private MainModel initialModel() {
-        return MainModel.builder().counter(0).build();
+        return MainModel.builder().build();
     }
 
     private Flowable<MainPatch> process(Flowable<MainIntent> shared) {
@@ -55,9 +57,7 @@ public class MainPresenter extends MviBasePresenter<MainView, MainModel> {
 
         Flowable<MainPatch> dummy = shared.ofType(MainIntent.DummyIntent.class)
                 .map(
-                        intent -> MainPatch.DummyPatch.builder()
-                                .counter(intent.getCounter())
-                                .build()
+                        intent -> new MainPatch.NoChange()
                 );
 
         return Flowable.merge(questionClicked, dummy);

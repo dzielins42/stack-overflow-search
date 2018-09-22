@@ -1,8 +1,13 @@
 package pl.dzielins42.stackoverflow.view;
 
+import java.util.Collections;
+import java.util.List;
+
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Accessors;
+import pl.dzielins42.stackoverflow.database.model.Question;
 
 /**
  * Interface for helper classes simplifying new {@link MainModel} instance creation.
@@ -10,22 +15,6 @@ import lombok.experimental.Accessors;
 public interface MainPatch {
 
     MainModel apply(MainModel model);
-
-    /**
-     * Takes previous {@link MainModel} and creates new instance with changed counter value.
-     */
-    @Value
-    @Accessors(prefix = "m")
-    @Builder
-    final class DummyPatch implements MainPatch {
-
-        private final long mCounter;
-
-        @Override
-        public MainModel apply(MainModel model) {
-            return model.toBuilder().counter(mCounter).build();
-        }
-    }
 
     /**
      * Applies no change to provided model.
@@ -38,6 +27,25 @@ public interface MainPatch {
         @Override
         public MainModel apply(MainModel model) {
             return model;
+        }
+    }
+
+    /**
+     * Sets collection of {@link Question} objects to be displayed. Collection may be empty if
+     * there was no result.
+     */
+    @Value
+    @Accessors(prefix = "m")
+    @Builder
+    final class DisplayResults implements MainPatch {
+
+        @Builder.Default
+        @NonNull
+        private final List<Question> mQuestions = Collections.emptyList();
+
+        @Override
+        public MainModel apply(MainModel model) {
+            return model.toBuilder().questions(mQuestions).build();
         }
     }
 }

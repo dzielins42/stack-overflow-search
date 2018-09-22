@@ -2,13 +2,13 @@ package pl.dzielins42.stackoverflow.view;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 
 import com.hannesdorfmann.mosby3.mvi.MviActivity;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -18,7 +18,6 @@ import butterknife.ButterKnife;
 import dagger.android.AndroidInjection;
 import io.reactivex.Flowable;
 import pl.dzielins42.stackoverflow.R;
-import pl.dzielins42.stackoverflow.database.model.Question;
 
 public class MainActivity
         extends MviActivity<MainView, MainPresenter>
@@ -31,6 +30,8 @@ public class MainActivity
 
     @BindView(R.id.recycler)
     RecyclerView mRecyclerView;
+    @BindView(R.id.empty)
+    AppCompatTextView mEmpty;
 
     private QuestionAdapter mAdapter;
 
@@ -44,19 +45,6 @@ public class MainActivity
 
         mAdapter = new QuestionAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
-        List<Question> dummy = new ArrayList<>(10);
-        for(int i=0;i<10;i++){
-            dummy.add(
-                    Question.builder()
-                            .id(i)
-                            .title(String.valueOf(i))
-                            .authorDisplayName(String.valueOf(i))
-                            .answerCount(i)
-                            .link("https://stackoverflow.com/questions/52458870")
-                            .build()
-            );
-        }
-        mAdapter.submitList(dummy);
     }
 
     @NonNull
@@ -78,6 +66,14 @@ public class MainActivity
     @Override
     public void render(MainModel model) {
         Log.d(TAG, "render: " + String.valueOf(model));
-        // Eg. update TextView...
+
+        if (model.getQuestions().isEmpty()) {
+            mEmpty.setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.GONE);
+        } else {
+            mEmpty.setVisibility(View.GONE);
+            mRecyclerView.setVisibility(View.VISIBLE);
+            mAdapter.submitList(model.getQuestions());
+        }
     }
 }
