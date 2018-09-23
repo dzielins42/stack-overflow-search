@@ -20,11 +20,13 @@
     <android.support.v7.widget.AppCompatTextView
         android:id="@+id/author_header"
         style="@style/TextAppearance.AppCompat.Subhead"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/question_item_padding_horizontal"
         android:maxLines="1"
         app:layout_constraintBottom_toTopOf="@id/title"
+        app:layout_constraintEnd_toStartOf="@id/answer_count"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/profile_image"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed" />
@@ -32,11 +34,13 @@
     <android.support.v7.widget.AppCompatTextView
         android:id="@+id/title"
         style="@style/TextAppearance.AppCompat.Caption"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/question_item_padding_horizontal"
         android:maxLines="1"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/answer_count"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/profile_image"
         app:layout_constraintTop_toBottomOf="@id/author_header" />
 

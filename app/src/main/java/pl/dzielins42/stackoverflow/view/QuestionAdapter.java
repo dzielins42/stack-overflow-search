@@ -89,7 +89,7 @@ public class QuestionAdapter extends ListAdapter<Question, QuestionAdapter.Quest
                 mProfileImage.setImageResource(R.drawable.ic_person_placeholder);
             }
             mAuthorHeader.setText(getFormattedAuthorHeader(question.getAuthorDisplayName()));
-            mTitle.setText(question.getTitle());
+            mTitle.setText(Html.fromHtml(question.getTitle()));
             mAnswerCount.setText(String.valueOf(question.getAnswerCount()));
         }
 
