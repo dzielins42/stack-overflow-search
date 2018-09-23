@@ -36,6 +36,8 @@ public interface MainIntent {
     final class Query implements MainIntent {
         @NonNull
         private final String mQuery;
+        @Builder.Default
+        private final int mPage = 1;
     }
 
     /**

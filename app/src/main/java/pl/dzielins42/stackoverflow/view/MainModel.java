@@ -17,6 +17,11 @@ import pl.dzielins42.stackoverflow.database.model.Question;
 @Accessors(prefix = "m")
 public class MainModel {
 
+    private final int mPage;
+    @NonNull
+    @Builder.Default
+    private final String mQuery = "";
+    private final boolean mLoadingResults;
     @NonNull
     @Builder.Default
     private final List<Question> mQuestions = Collections.emptyList();

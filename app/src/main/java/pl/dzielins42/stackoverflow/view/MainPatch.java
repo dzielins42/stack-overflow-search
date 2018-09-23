@@ -48,4 +48,32 @@ public interface MainPatch {
             return model.toBuilder().questions(mQuestions).build();
         }
     }
+
+    @Value
+    @Accessors(prefix = "m")
+    @Builder
+    final class SetQuery implements MainPatch {
+
+        private final int mPage;
+        @NonNull
+        private final String mQuery;
+
+        @Override
+        public MainModel apply(MainModel model) {
+            return model.toBuilder().query(mQuery).page(mPage).build();
+        }
+    }
+
+    @Value
+    @Accessors(prefix = "m")
+    @Builder
+    final class SetLoadingResults implements MainPatch {
+
+        private final boolean mLoading;
+
+        @Override
+        public MainModel apply(MainModel model) {
+            return model.toBuilder().loadingResults(mLoading).build();
+        }
+    }
 }

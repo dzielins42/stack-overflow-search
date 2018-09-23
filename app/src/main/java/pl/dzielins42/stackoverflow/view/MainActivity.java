@@ -2,10 +2,12 @@ package pl.dzielins42.stackoverflow.view;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -39,8 +41,13 @@ public class MainActivity
     RecyclerView mRecyclerView;
     @BindView(R.id.empty)
     AppCompatTextView mEmpty;
+    @BindView(R.id.swiperefresh)
+    SwipeRefreshLayout mSwipeRefresh;
 
     private QuestionAdapter mAdapter;
+
+    private String mCurrentQuery = null;
+    private int mCurrentResultsPage = 0;
 
     private final FlowableProcessor<CharSequence> mQueryObservable = PublishProcessor.create();
 
@@ -55,6 +62,8 @@ public class MainActivity
         setSupportActionBar(mToolbar);
         mAdapter = new QuestionAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
+
+        mSwipeRefresh.setOnRefreshListener(() -> mQueryObservable.onNext(mCurrentQuery));
     }
 
     @Override
@@ -90,8 +99,11 @@ public class MainActivity
         Flowable<MainIntent> listClicks = mAdapter.intents();
         Flowable<MainIntent> search = mQueryObservable
                 .debounce(250, TimeUnit.MILLISECONDS)
-                .distinctUntilChanged()
-                .map(text -> (MainIntent) new MainIntent.Query(text.toString()));
+                .filter(text -> !TextUtils.isEmpty(text))
+                .map(text -> (MainIntent) MainIntent.Query.builder()
+                        .query(String.valueOf(text))
+                        .build()
+                );
 
         return Flowable.merge(listClicks, search);
     }
@@ -99,6 +111,11 @@ public class MainActivity
     @Override
     public void render(MainModel model) {
         Log.d(TAG, "render: " + String.valueOf(model));
+
+        mCurrentQuery = model.getQuery();
+        mCurrentResultsPage = model.getPage();
+
+        mSwipeRefresh.setEnabled(!TextUtils.isEmpty(mCurrentQuery));
 
         if (model.getQuestions().isEmpty()) {
             mEmpty.setVisibility(View.VISIBLE);
@@ -108,5 +125,7 @@ public class MainActivity
             mRecyclerView.setVisibility(View.VISIBLE);
             mAdapter.submitList(model.getQuestions());
         }
+
+        mSwipeRefresh.setRefreshing(model.isLoadingResults());
     }
 }

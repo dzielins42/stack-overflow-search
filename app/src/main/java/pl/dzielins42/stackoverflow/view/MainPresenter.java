@@ -4,20 +4,13 @@ import android.util.Log;
 
 import com.hannesdorfmann.mosby3.mvi.MviBasePresenter;
 
-import org.reactivestreams.Subscription;
-
-import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import io.reactivex.Flowable;
-import io.reactivex.FlowableSubscriber;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import pl.dzielins42.stackoverflow.database.QuestionDao;
-import pl.dzielins42.stackoverflow.database.model.Question;
 import pl.dzielins42.stackoverflow.interactor.DatabaseInteractor;
 import pl.dzielins42.stackoverflow.interactor.QueryInteractor;
 import pl.dzielins42.stackoverflow.interactor.QuestionClickedInteractor;
@@ -60,9 +53,10 @@ public class MainPresenter extends MviBasePresenter<MainView, MainModel> {
         subscribeViewState(
                 intent(view -> Flowable.merge(view.intents(), nonViewIntents)
                         .subscribeOn(Schedulers.io())
-                        .doOnNext(event -> Log.d(TAG, String.valueOf(event)))
+                        .doOnNext(event -> Log.d(TAG, "Intent: " + String.valueOf(event)))
                         .publish(event -> process(event))
                         .doOnError(throwable -> Log.e(TAG, "Error: ", throwable))
+                        .doOnNext(patch -> Log.d(TAG, "Patch: " + String.valueOf(patch)))
                         .scan(initialModel(), (model, patch) -> patch.apply(model))
                         // Skip initial model
                         .skip(1)
@@ -88,11 +82,24 @@ public class MainPresenter extends MviBasePresenter<MainView, MainModel> {
 
         Flowable<MainPatch> query = shared.ofType(MainIntent.Query.class)
                 .switchMap(intent ->
-                        mQueryInteractor.query(intent.getQuery(), 1)
-                                .toFlowable()
+                        mQueryInteractor.query(intent.getQuery(), intent.getPage())
+                                .andThen(Flowable.<MainPatch>just(
+                                        MainPatch.SetLoadingResults
+                                                .builder()
+                                                .loading(false)
+                                                .build()
+                                ))
+                                .startWith(Flowable.fromArray(
+                                        MainPatch.SetLoadingResults.builder()
+                                                .loading(true)
+                                                .build(),
+                                        MainPatch.SetQuery.builder()
+                                                .query(intent.getQuery())
+                                                .page(intent.getPage())
+                                                .build()
+                                ))
                                 .doOnError(throwable -> Log.e(TAG, "Error: ", throwable))
                                 .onErrorReturn(throwable -> new MainPatch.NoChange())
-                                .map(ignore -> new MainPatch.NoChange())
                 );
 
         Flowable<MainPatch> resultsUpdate = shared.ofType(MainIntent.ResultsUpdate.class)
