@@ -43,7 +43,7 @@ public class MainPresenter extends MviBasePresenter<MainView, MainModel> {
             QuestionClickedInteractor questionClickedInteractor,
             QueryInteractor queryInteractor,
             DatabaseInteractor databaseInteractor, QuestionDao questionDao) {
-        super();
+        super(initialModel());
         mQuestionClickedInteractor = questionClickedInteractor;
         mQueryInteractor = queryInteractor;
         mDatabaseInteractor = databaseInteractor;
@@ -73,7 +73,7 @@ public class MainPresenter extends MviBasePresenter<MainView, MainModel> {
         );
     }
 
-    private MainModel initialModel() {
+    private static MainModel initialModel() {
         return MainModel.builder().build();
     }
 
