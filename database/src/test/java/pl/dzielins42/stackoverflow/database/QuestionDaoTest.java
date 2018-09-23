@@ -10,12 +10,14 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
+import java.util.Arrays;
 import java.util.List;
 
 import pl.dzielins42.stackoverflow.database.model.Question;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -98,5 +100,26 @@ public class QuestionDaoTest {
                 .authorDisplayName(String.valueOf(i))
                 .link(String.valueOf(i))
                 .build();
+    }
+
+    @Test
+    public void correctSort() {
+        Question q1 = createSimpleQuestion(1);
+        q1.setPage(2);
+        q1.setOrder(1);
+        Question q2 = createSimpleQuestion(2);
+        q2.setPage(1);
+        q2.setOrder(5);
+        Question q3 = createSimpleQuestion(3);
+        q3.setPage(1);
+        q3.setOrder(10);
+
+        mQuestionDao.insert(q3);
+        mQuestionDao.insert(q1);
+        mQuestionDao.insert(q2);
+
+        List<Question> questions = mQuestionDao.all().blockingFirst();
+
+        assertEquals(Arrays.asList(q2, q3, q1), questions);
     }
 }

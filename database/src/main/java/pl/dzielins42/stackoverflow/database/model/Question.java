@@ -35,4 +35,8 @@ public class Question {
     @ColumnInfo(name = "link")
     @NonNull
     private String mLink;
+    @ColumnInfo(name = "page")
+    private int mPage;
+    @ColumnInfo(name = "ordinal")
+    private int mOrder;
 }

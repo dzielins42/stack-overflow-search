@@ -33,9 +33,10 @@ public abstract class QuestionDao {
 
     /**
      * @return {@link Flowable} emitting list of all entities in question database. In case
-     * underlying data changes, new list will be emitted.
+     * underlying data changes, new list will be emitted. Returned list is sorted by page and
+     * order properties of {@link Question}.
      */
-    @Query("SELECT * FROM questions")
+    @Query("SELECT * FROM questions ORDER BY page ASC, ordinal ASC")
     public abstract Flowable<List<Question>> all();
 
     /**

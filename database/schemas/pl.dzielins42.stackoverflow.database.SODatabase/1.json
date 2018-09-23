@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "40cd066eda5f77bb8738866d3f9e4708",
+    "identityHash": "90bc29809fd5c75cd5813f9b0bce0066",
     "entities": [
       {
         "tableName": "questions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`question_id` INTEGER NOT NULL, `title` TEXT NOT NULL, `answer_count` INTEGER NOT NULL, `author_display_name` TEXT NOT NULL, `author_profile_image_ulr` TEXT, `link` TEXT NOT NULL, PRIMARY KEY(`question_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`question_id` INTEGER NOT NULL, `title` TEXT NOT NULL, `answer_count` INTEGER NOT NULL, `author_display_name` TEXT NOT NULL, `author_profile_image_ulr` TEXT, `link` TEXT NOT NULL, `page` INTEGER NOT NULL, `ordinal` INTEGER NOT NULL, PRIMARY KEY(`question_id`))",
         "fields": [
           {
             "fieldPath": "mId",
@@ -39,9 +39,21 @@
             "notNull": false
           },
           {
-            "fieldPath": "link",
+            "fieldPath": "mLink",
             "columnName": "link",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mPage",
+            "columnName": "page",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mOrder",
+            "columnName": "ordinal",
+            "affinity": "INTEGER",
             "notNull": true
           }
         ],
@@ -57,7 +69,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"40cd066eda5f77bb8738866d3f9e4708\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"90bc29809fd5c75cd5813f9b0bce0066\")"
     ]
   }
 }
