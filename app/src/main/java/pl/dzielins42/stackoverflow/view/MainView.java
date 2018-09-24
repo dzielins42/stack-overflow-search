@@ -6,11 +6,11 @@ import io.reactivex.Flowable;
 
 /**
  * Presentation layer interface capable of rendering {@link MainModel} and providing user input
- * via stream of {@link MainIntent} intances.
+ * via streams of intents.
  */
 public interface MainView extends MvpView {
 
-    Flowable<MainIntent> intents();
+    Flowable<String> queryIntent();
 
     void render(MainModel model);
 }

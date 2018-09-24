@@ -32,4 +32,11 @@ public class Question {
     private String mAuthorDisplayName;
     @ColumnInfo(name = "author_profile_image_ulr")
     private String mAuthorProfileImageUrl;
+    @ColumnInfo(name = "link")
+    @NonNull
+    private String mLink;
+    @ColumnInfo(name = "page")
+    private int mPage;
+    @ColumnInfo(name = "ordinal")
+    private int mOrder;
 }

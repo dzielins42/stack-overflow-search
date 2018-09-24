@@ -4,8 +4,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.time.Instant;
-
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import pl.dzielins42.stackoverflow.api.model.generated.SearchResult;
@@ -13,7 +11,7 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 public class StackOverflowServiceActualTest {
 
@@ -47,15 +45,9 @@ public class StackOverflowServiceActualTest {
     @Test
     public void search_valid_response() throws Exception {
         SearchResult result = mService.search(
-                null, null,
-                null, Instant.parse("2018-09-19T00:00:00.00Z").getEpochSecond(),
-                null,
-                null, null,
-                null,
-                null, null,
-                "android converter"
+                null, "degeneration"
         ).blockingGet();
 
-        assertEquals(6, result.getQuestions().size());
+        assertTrue(result.getQuestions().size() >= 5);
     }
 }
