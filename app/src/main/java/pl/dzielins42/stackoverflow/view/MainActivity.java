@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.Toast;
 
 import com.hannesdorfmann.mosby3.mvi.MviActivity;
 
@@ -31,6 +32,7 @@ public class MainActivity
         implements MainView {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final long QUERY_DEBOUNCE_MS = 500;
 
     @Inject
     MainPresenter mMainPresenter;
@@ -47,7 +49,6 @@ public class MainActivity
     private QuestionAdapter mAdapter;
 
     private String mCurrentQuery = null;
-    private int mCurrentResultsPage = 0;
 
     private final FlowableProcessor<CharSequence> mQueryObservable = PublishProcessor.create();
 
@@ -95,17 +96,12 @@ public class MainActivity
     }
 
     @Override
-    public Flowable<MainIntent> intents() {
-        Flowable<MainIntent> listClicks = mAdapter.intents();
-        Flowable<MainIntent> search = mQueryObservable
-                .debounce(250, TimeUnit.MILLISECONDS)
-                .filter(text -> !TextUtils.isEmpty(text))
-                .map(text -> (MainIntent) MainIntent.Query.builder()
-                        .query(String.valueOf(text))
-                        .build()
-                );
-
-        return Flowable.merge(listClicks, search);
+    public Flowable<String> queryIntent() {
+        return mQueryObservable
+                .filter(charSequence -> !TextUtils.isEmpty(charSequence))
+                .filter(charSequence -> charSequence.length() > 0)
+                .debounce(QUERY_DEBOUNCE_MS, TimeUnit.MILLISECONDS)
+                .map(CharSequence::toString);
     }
 
     @Override
@@ -113,19 +109,31 @@ public class MainActivity
         Log.d(TAG, "render: " + String.valueOf(model));
 
         mCurrentQuery = model.getQuery();
-        mCurrentResultsPage = model.getPage();
 
         mSwipeRefresh.setEnabled(!TextUtils.isEmpty(mCurrentQuery));
 
-        if (model.getQuestions().isEmpty()) {
-            mEmpty.setVisibility(View.VISIBLE);
+        final boolean noResult = model.getQuestions() == null || model.getQuestions().isEmpty();
+
+        mAdapter.submitList(model.getQuestions());
+
+        if (noResult && !model.isInitialLoading()) {
             mRecyclerView.setVisibility(View.GONE);
+            mEmpty.setVisibility(View.VISIBLE);
         } else {
             mEmpty.setVisibility(View.GONE);
             mRecyclerView.setVisibility(View.VISIBLE);
-            mAdapter.submitList(model.getQuestions());
         }
 
-        mSwipeRefresh.setRefreshing(model.isLoadingResults());
+        mSwipeRefresh.setRefreshing(model.isInitialLoading());
+
+        if (model.getError() != null) {
+            Toast.makeText(
+                    this,
+                    String.format("Error: %s", model.getError().getLocalizedMessage()),
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+
+        mAdapter.setLoading(model.isPageLoading());
     }
 }

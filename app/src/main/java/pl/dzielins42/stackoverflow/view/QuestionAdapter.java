@@ -1,8 +1,10 @@
 package pl.dzielins42.stackoverflow.view;
 
+import android.arch.paging.PagedListAdapter;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.support.v7.recyclerview.extensions.ListAdapter;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.AppCompatTextView;
@@ -18,16 +20,15 @@ import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.Flowable;
-import io.reactivex.processors.FlowableProcessor;
-import io.reactivex.processors.PublishProcessor;
 import pl.dzielins42.stackoverflow.R;
 import pl.dzielins42.stackoverflow.database.model.Question;
 
-public class QuestionAdapter extends ListAdapter<Question, QuestionAdapter.QuestionViewHolder> {
+public class QuestionAdapter extends PagedListAdapter<Question, RecyclerView.ViewHolder> {
 
+    @NonNull
     private final Context mContext;
-    private final FlowableProcessor<MainIntent> mIntents = PublishProcessor.create();
+
+    private boolean mLoadingPage = false;
 
     QuestionAdapter(@NonNull Context context) {
         super(new QuestionDiffUtilItemCallback());
@@ -35,22 +36,48 @@ public class QuestionAdapter extends ListAdapter<Question, QuestionAdapter.Quest
         mContext = context;
     }
 
-    Flowable<MainIntent> intents() {
-        return mIntents;
-    }
-
     @NonNull
     @Override
-    public QuestionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        final View view = LayoutInflater.from(parent.getContext()).inflate(
-                R.layout.item_question, parent, false
-        );
-        return new QuestionViewHolder(view);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == R.layout.item_question) {
+            final View view = LayoutInflater.from(parent.getContext()).inflate(
+                    R.layout.item_question, parent, false
+            );
+            return new QuestionViewHolder(view);
+        } else {
+            final View view = LayoutInflater.from(parent.getContext()).inflate(
+                    R.layout.item_status, parent, false
+            );
+            return new StatusItemViewHolder(view);
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull QuestionViewHolder holder, int position) {
-        holder.bind(getItem(position));
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (getItemViewType(position) == R.layout.item_question) {
+            ((QuestionViewHolder) holder).bind(getItem(position));
+        }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (mLoadingPage && position == getItemCount() - 1) {
+            return R.layout.item_status;
+        } else {
+            return R.layout.item_question;
+        }
+    }
+
+    void setLoading(boolean isLoadingPage) {
+        if (isLoadingPage == mLoadingPage) {
+            return;
+        }
+        mLoadingPage = isLoadingPage;
+        if (!mLoadingPage) {
+            notifyItemRemoved(super.getItemCount());
+        } else {
+            notifyItemInserted(super.getItemCount());
+        }
     }
 
     public class QuestionViewHolder extends RecyclerView.ViewHolder {
@@ -72,7 +99,9 @@ public class QuestionAdapter extends ListAdapter<Question, QuestionAdapter.Quest
             ButterKnife.bind(this, itemView);
 
             itemView.setOnClickListener(v -> {
-                mIntents.onNext(MainIntent.QuestionClicked.builder().question(mQuestion).build());
+                Intent intent = new Intent(Intent.ACTION_VIEW)
+                        .setData(Uri.parse(mQuestion.getLink()));
+                mContext.startActivity(intent);
             });
         }
 
@@ -95,6 +124,13 @@ public class QuestionAdapter extends ListAdapter<Question, QuestionAdapter.Quest
 
         private Spanned getFormattedAuthorHeader(@NonNull String authorDisplayName) {
             return Html.fromHtml(mContext.getString(R.string.author_header, authorDisplayName));
+        }
+    }
+
+    public class StatusItemViewHolder extends RecyclerView.ViewHolder {
+
+        StatusItemViewHolder(@NonNull View itemView) {
+            super(itemView);
         }
     }
 

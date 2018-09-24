@@ -1,9 +1,8 @@
 package pl.dzielins42.stackoverflow.view;
 
-import java.util.Collections;
-import java.util.List;
+import android.arch.paging.PagedList;
+import android.support.annotation.Nullable;
 
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Accessors;
@@ -17,31 +16,15 @@ public interface MainPatch {
     MainModel apply(MainModel model);
 
     /**
-     * Applies no change to provided model.
-     */
-    @Value
-    @Accessors(prefix = "m")
-    @Builder
-    final class NoChange implements MainPatch {
-
-        @Override
-        public MainModel apply(MainModel model) {
-            return model;
-        }
-    }
-
-    /**
      * Sets collection of {@link Question} objects to be displayed. Collection may be empty if
      * there was no result.
      */
     @Value
     @Accessors(prefix = "m")
-    @Builder
     final class DisplayResults implements MainPatch {
 
-        @Builder.Default
         @NonNull
-        private final List<Question> mQuestions = Collections.emptyList();
+        private final PagedList<Question> mQuestions;
 
         @Override
         public MainModel apply(MainModel model) {
@@ -51,29 +34,57 @@ public interface MainPatch {
 
     @Value
     @Accessors(prefix = "m")
-    @Builder
     final class SetQuery implements MainPatch {
 
-        private final int mPage;
         @NonNull
         private final String mQuery;
 
         @Override
         public MainModel apply(MainModel model) {
-            return model.toBuilder().query(mQuery).page(mPage).build();
+            return model.toBuilder().query(mQuery).build();
         }
     }
 
     @Value
     @Accessors(prefix = "m")
-    @Builder
-    final class SetLoadingResults implements MainPatch {
+    final class SetPageLoading implements MainPatch {
 
-        private final boolean mLoading;
+        private final boolean mPageLoading;
 
         @Override
         public MainModel apply(MainModel model) {
-            return model.toBuilder().loadingResults(mLoading).build();
+            return model.toBuilder()
+                    .pageLoading(isPageLoading())
+                    .build();
+        }
+    }
+
+    @Value
+    @Accessors(prefix = "m")
+    final class SetInitialLoading implements MainPatch {
+
+        private final boolean mInitialLoading;
+
+        @Override
+        public MainModel apply(MainModel model) {
+            return model.toBuilder()
+                    .initialLoading(mInitialLoading)
+                    .build();
+        }
+    }
+
+    @Value
+    @Accessors(prefix = "m")
+    final class SetError implements MainPatch {
+
+        @Nullable
+        private final Throwable mError;
+
+        @Override
+        public MainModel apply(MainModel model) {
+            return model.toBuilder()
+                    .error(mError)
+                    .build();
         }
     }
 }

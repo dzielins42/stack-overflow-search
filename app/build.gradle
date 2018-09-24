@@ -55,6 +55,9 @@ dependencies {
     implementation 'com.jakewharton.rxbinding2:rxbinding-support-v4:2.1.1'
     // Picasso
     implementation 'com.squareup.picasso:picasso:2.71828'
+    // Android Paging
+    implementation 'android.arch.paging:runtime:1.0.1'
+    implementation 'android.arch.paging:rxjava2:1.0.1'
     // Module dependencies
     implementation project(path: ':database')
     implementation project(path: ':so-api')

@@ -1,7 +1,7 @@
 package pl.dzielins42.stackoverflow.view;
 
-import java.util.Collections;
-import java.util.List;
+import android.arch.paging.PagedList;
+import android.support.annotation.Nullable;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -15,14 +15,15 @@ import pl.dzielins42.stackoverflow.database.model.Question;
 @Value
 @Builder(toBuilder = true)
 @Accessors(prefix = "m")
-public class MainModel {
+class MainModel {
 
-    private final int mPage;
+    private final boolean mInitialLoading;
+    private final boolean mPageLoading;
+    @Nullable
+    private final Throwable mError;
     @NonNull
     @Builder.Default
     private final String mQuery = "";
-    private final boolean mLoadingResults;
-    @NonNull
-    @Builder.Default
-    private final List<Question> mQuestions = Collections.emptyList();
+    @Nullable
+    private final PagedList<Question> mQuestions;
 }

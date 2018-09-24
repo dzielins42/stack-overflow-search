@@ -1,5 +1,7 @@
 package pl.dzielins42.stackoverflow.database;
 
+import android.arch.paging.DataSource;
+import android.arch.paging.PagedList;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.OnConflictStrategy;
@@ -13,6 +15,23 @@ import pl.dzielins42.stackoverflow.database.model.Question;
 
 @Dao
 public abstract class QuestionDao {
+    /**
+     * @return {@link Flowable} emitting list of all entities in question table. In case
+     * underlying data changes, new list will be emitted. Returned list is sorted by page and
+     * order properties of {@link Question}.
+     */
+    @Query("SELECT * FROM questions ORDER BY page ASC, ordinal ASC")
+    public abstract Flowable<List<Question>> all();
+
+    /**
+     * @return {@link DataSource} backing up {@link PagedList} with all entities in question
+     * table. In case
+     * underlying data changes, new list will be emitted. Returned list is sorted by page and
+     * order properties of {@link Question}.
+     */
+    @Query("SELECT * FROM questions ORDER BY page ASC, ordinal ASC")
+    public abstract DataSource.Factory<Integer, Question> allDataSource();
+
     /**
      * Inserts provided {@link Question} instances into questions table in Room database. In case
      * of conflict, {@link OnConflictStrategy#REPLACE} strategy is used.
@@ -30,14 +49,6 @@ public abstract class QuestionDao {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public abstract void insert(List<Question> questions);
-
-    /**
-     * @return {@link Flowable} emitting list of all entities in question database. In case
-     * underlying data changes, new list will be emitted. Returned list is sorted by page and
-     * order properties of {@link Question}.
-     */
-    @Query("SELECT * FROM questions ORDER BY page ASC, ordinal ASC")
-    public abstract Flowable<List<Question>> all();
 
     /**
      * Removes all data from questions table.
