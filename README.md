@@ -1,5 +1,7 @@
 # Stack Overflow Search
 
+[APK](https://github.com/dzielins42/stack-overflow-search/raw/master/APK.apk) (release build signed with debug.keystore)
+
 Libraries used:
 - [Android Support Library](https://developer.android.com/topic/libraries/support-library/) (AppCompat, RecyclerView, ConstraintLayout)
 - [Android Architecture Components](https://developer.android.com/topic/libraries/architecture/) (Room, Paging)
